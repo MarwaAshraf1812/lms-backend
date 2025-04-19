@@ -29,7 +29,7 @@ A comprehensive backend solution for managing courses, modules, users, and AI-po
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/yourusername/lms-backend.git
+   git clone https://github.com/MarwaAshraf1812/lms-backend.git
    cd lms-backend
    ```
 
