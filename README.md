@@ -1,7 +1,3 @@
-Here’s a **README** template to document your project:
-
----
-
 # Learning Management System (LMS)
 
 A comprehensive backend solution for managing courses, modules, users, and AI-powered recommendations for students. The LMS is built with **Node.js**, **Express**, and **Prisma** ORM. It includes features such as course creation, module management, and role-based access.
