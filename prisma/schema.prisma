@@ -16,27 +16,43 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   courses   Course[]
+  enrollments Enrollment[]
 }
 
 model Course {
   id          String   @id @default(uuid())
   title       String
+  category    String
+  level       String
+  language    String
   description String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  teacherId   String
-  teacher     User     @relation(fields: [teacherId], references: [id])
   modules     Module[]
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdById String
+  enrollments Enrollment[]
 }
 
 model Module {
   id        String   @id @default(uuid())
   title     String
   content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  courseId  String
+  order     Int
   course    Course   @relation(fields: [courseId], references: [id])
+  courseId  String
+  createdAt DateTime @default(now())
+}
+
+model Enrollment {
+  id       String   @id @default(uuid())
+  user    User     @relation(fields: [userId], references: [id])
+  userId   String
+  course   Course   @relation(fields: [courseId], references: [id])
+  courseId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, courseId])
 }
 
 enum Role {

@@ -2,7 +2,7 @@ import { z } from 'zod';
 const allowedRoles = ['ADMIN', 'STUDENT', 'INSTRUCTOR'] as const;
 
 export const registerUserSchema = z.object({
-  username: z.string().min(3).max(100),
+  username: z.string().optional(),
   email: z.string().email(),
   password: z.string().min(8),
   role: z.enum(allowedRoles),
