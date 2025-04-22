@@ -20,6 +20,7 @@ export const createCourseHandler = async (
     const course = await handleCreateCourse(req.body, userId);
     res.status(201).json(course);
   } catch (error) {
+    console.error("Error creating course:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };

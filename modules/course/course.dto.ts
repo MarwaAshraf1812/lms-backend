@@ -3,9 +3,12 @@ import { z } from 'zod';
 export const createCourseSchema = z.object({
   title: z.string().min(3),
   description: z.string().min(10),
-  category: z.string().min(3),
-  level: z.enum(['beginner', 'intermediate', 'advanced']),
-  language: z.enum(['english', 'spanish', 'french', 'Arabic']),
+  categoryId: z.string().uuid(),
+  level: z.enum(['Beginner', 'Intermediate', 'Advanced'], {
+    required_error: 'Level is required or must be one of the specified values ',
+    invalid_type_error: 'Level must be a string',
+  }),
+  language: z.enum(['English', 'Spanish', 'French', 'Arabic']),
 });
 
 export const createModuleSchema = z.object({

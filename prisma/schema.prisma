@@ -18,11 +18,16 @@ model User {
   courses   Course[]
   enrollments Enrollment[]
 }
-
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  courses   Course[]
+} 
 model Course {
   id          String   @id @default(uuid())
   title       String
-  category    String
   level       String
   language    String
   description String
@@ -32,6 +37,8 @@ model Course {
   createdBy   User     @relation(fields: [createdById], references: [id])
   createdById String
   enrollments Enrollment[]
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
 }
 
 model Module {
@@ -67,6 +74,6 @@ model AIResponse {
 
 enum Role {
   STUDENT
-  TEACHER
+  INSTRUCTOR
   ADMIN
 }

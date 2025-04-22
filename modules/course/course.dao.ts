@@ -6,37 +6,48 @@ const POPULAR_COURSES_KEY = "popular_courses";
 export const createCourse = async (data: {
   title: string;
   description: string;
-  category: string;
+  categoryId: string;
   level: string;
   language: string;
   createdById: string;
 }) => {
   try {
-    return prisma.course.create({ data });
+    const course = await prisma.course.create({
+      data,
+      include: {
+        createdBy: {
+          select: {
+            username: true,
+            email: true,
+          }
+        },
+        modules: true,
+      }
+    });
+
+    return course;
   } catch (error) {
     throw new Error("Error creating course");
   }
 };
 
-export const getAllCourses = async (
-  {
-    page = 1,
-    limit = 10,
-    sort = "createdAt",
-    order = "desc",
-    title,
-  } : {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    order?: "asc" | "desc";
-    title?: string;
-  }
-) => {
+export const getAllCourses = async ({
+  page = 1,
+  limit = 10,
+  sort = "createdAt",
+  order = "desc",
+  title,
+}: {
+  page?: number;
+  limit?: number;
+  sort?: string;
+  order?: "asc" | "desc";
+  title?: string;
+}) => {
   try {
     const skip = (page - 1) * limit;
     const where = title
-      ? { title: { contains: title, mode: "insensitive" } } as const
+      ? ({ title: { contains: title, mode: "insensitive" } } as const)
       : {};
     const courses = await prisma.course.findMany({
       where,
@@ -55,8 +66,8 @@ export const getAllCourses = async (
     return {
       courses,
       totalCourses,
-      totalPages
-    }
+      totalPages,
+    };
   } catch (error) {
     throw new Error("Error fetching courses");
   }
@@ -131,18 +142,23 @@ export const getPopularCourses = async () => {
 
 export const filterCourses = async (query: {
   search?: string;
-  category?: string;
+  categoryId?: string;
   level?: string;
 }) => {
-  const { search, category, level } = query;
+  try {
+    const { search, categoryId, level } = query;
 
-  return await prisma.course.findMany({
-    where: {
-      AND: [
-        search ? { title: { contains: search, mode: "insensitive" } } : {},
-        category ? { category } : {},
-        level ? { level } : {},
-      ],
-    },
-  })
-}
+    return await prisma.course.findMany({
+      where: {
+        AND: [
+          search ? { title: { contains: search, mode: "insensitive" } } : {},
+          categoryId ? { categoryId } : {},
+          level ? { level } : {},
+        ],
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error filtering courses");
+  }
+};

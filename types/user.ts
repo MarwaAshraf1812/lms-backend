@@ -1,7 +1,7 @@
 // src/types/auth.ts
 export interface JwtUserPayload {
   id: string;
-  role: 'admin' | 'student' | 'teacher';
+  role: 'ADMIN'| 'STUDENT'| 'INSTRUCTOR';
 }
 
 

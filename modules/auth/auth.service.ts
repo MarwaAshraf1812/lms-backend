@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { prisma, userRole } from '../../config/prisma';
+import { userRole } from '../../config/prisma';
 import { registerUserSchema, loginUserSchema } from './auth.dto';
 import { createUser, findUserByEmail } from './auth.dao';
 
@@ -28,17 +28,16 @@ export const registerUser = async (userData: User) => {
         username: parsedData.username,
         email: parsedData.email,
         password: hashedPassword,
-        role: parsedData.role.toUpperCase() as keyof typeof userRole,
+        role: userRole[parsedData.role.toUpperCase() as keyof typeof userRole],
     })
     return {
-      id: newUser.id,
       username: newUser.username,
       email: newUser.email,
       role: newUser.role,
     };
   } catch (error) {
+    console.error(error);
     throw new Error('Error registering user');
-    
   }
 }
 
@@ -56,6 +55,11 @@ export const loginUser = async (userData: { email: string; password: string }) =
       expiresIn: '1h',
     });
     return {
+      user : {
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
       token,
     };
 
