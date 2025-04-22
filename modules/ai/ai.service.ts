@@ -6,7 +6,7 @@ const openai = new OpenAI({
 
 export const generateQuizOrContent = async (topic: string, type: 'quiz' | 'summary' | 'resources') => {
   const promptMap = {
-    quiz: `Generate 3 MCQ quiz questions with 4 choices and answers about: ${topic}`,
+    quiz: `Generate 20 MCQ quiz questions with 4 choices and answers about: ${topic}`,
     summary: `Summarize this concept in simple terms: ${topic}`,
     resources: `Suggest online resources to learn more about: ${topic}`,
   };

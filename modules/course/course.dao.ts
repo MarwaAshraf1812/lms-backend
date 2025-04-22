@@ -18,13 +18,45 @@ export const createCourse = async (data: {
   }
 };
 
-export const getAllCourses = async () => {
+export const getAllCourses = async (
+  {
+    page = 1,
+    limit = 10,
+    sort = "createdAt",
+    order = "desc",
+    title,
+  } : {
+    page?: number;
+    limit?: number;
+    sort?: string;
+    order?: "asc" | "desc";
+    title?: string;
+  }
+) => {
   try {
-    return await prisma.course.findMany({
+    const skip = (page - 1) * limit;
+    const where = title
+      ? { title: { contains: title, mode: "insensitive" } } as const
+      : {};
+    const courses = await prisma.course.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: {
+        [sort]: order,
+      },
       include: {
         modules: true,
       },
     });
+
+    const totalCourses = await prisma.course.count({ where });
+    const totalPages = Math.ceil(totalCourses / limit);
+    return {
+      courses,
+      totalCourses,
+      totalPages
+    }
   } catch (error) {
     throw new Error("Error fetching courses");
   }

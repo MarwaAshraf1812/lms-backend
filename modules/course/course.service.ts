@@ -35,8 +35,19 @@ export const handleCreateModule = async (data: CreateModuleData) => {
   return await createModule(validatedData);
 };
 
-export const handleGetCourses = async () => {
-  return await getAllCourses();
+export const handleGetCourses = async (query: any) => {
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 10;
+  const sort = query.sort || "createdAt";
+  const order = query.order || "desc";
+  const title = query.title || '';
+  return await getAllCourses({
+    page,
+    limit,
+    sort,
+    order,
+    title,
+  });
 };
 
 export const handleEnrollment = async (userId: string, courseId: string) => {

@@ -34,7 +34,11 @@ export const createModuleHandler = async (req: Request, res: Response) => {
 
 export const getCoursesHandler = async (req: Request, res: Response) => {
   try {
-    const courses = await handleGetCourses();
+    const courses = await handleGetCourses(req.query);
+    if (!courses) {
+      res.status(404).json({ error: "No courses found" });
+      return;
+    }
     res.status(200).json(courses);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
