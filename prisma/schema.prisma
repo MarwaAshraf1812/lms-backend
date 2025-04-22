@@ -55,6 +55,16 @@ model Enrollment {
   @@unique([userId, courseId])
 }
 
+model AIResponse {
+  id String @id @default(uuid())
+  type String // quiz, summary, etc.
+  topic String?
+  prompt String @db.Text
+  response Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 enum Role {
   STUDENT
   TEACHER
