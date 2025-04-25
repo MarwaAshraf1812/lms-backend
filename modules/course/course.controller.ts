@@ -5,13 +5,14 @@ import {
   handleGetCourses,
   handleEnrollment,
   handleGetPopularCourses,
-  handleFilterCourses
+  handleFilterCourses,
+  handleUpdateModule,
 } from "./course.service";
 
 export const createCourseHandler = async (
   req: Request,
   res: Response
-): Promise<void> => {
+) => {
   try {
     const userId = req.user?.id as string;
     if (!userId) {
@@ -29,6 +30,23 @@ export const createModuleHandler = async (req: Request, res: Response) => {
     const module = await handleCreateModule(req.body);
     res.status(201).json(module);
   } catch (error) {
+    console.error("Error fetching courses:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const updateModuleHandler = async (req: Request, res: Response) => {
+  console.log(req.query.module_id, req.body)
+  try {
+    const module_id = req.query.module_id as string | undefined;
+    if (!module_id) {
+      res.status(400).json({ error: "Module ID is required" });
+      return;
+    }
+    const module = await handleUpdateModule(req.body, module_id);
+    res.status(200).json(module);
+  } catch (error) {
+    console.error("Error updating module:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };

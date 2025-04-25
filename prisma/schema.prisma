@@ -44,12 +44,31 @@ model Course {
 model Module {
   id        String   @id @default(uuid())
   title     String
-  content   String
   order     Int
   course    Course   @relation(fields: [courseId], references: [id])
   courseId  String
   createdAt DateTime @default(now())
+  moduleContent ModuleContent[]
 }
+enum ContentType {
+  text
+  video
+  image
+  pdf
+}
+
+model ModuleContent {
+  id        String   @id @default(uuid())
+  type      ContentType
+  data      String?
+  url       String?
+  alt       String?
+  title     String?
+  module    Module   @relation(fields: [moduleId], references: [id])
+  moduleId  String
+  createdAt DateTime @default(now())
+}
+
 
 model Enrollment {
   id       String   @id @default(uuid())

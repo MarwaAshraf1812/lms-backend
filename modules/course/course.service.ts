@@ -1,4 +1,10 @@
-import { createCourseSchema, createModuleSchema } from "./course.dto";
+import {
+  createCourseSchema,
+  CreateModuleData,
+  createModuleSchema,
+  UpdateModuleData,
+  updateModuleSchema,
+} from "./course.dto";
 import {
   createCourse,
   getAllCourses,
@@ -6,17 +12,12 @@ import {
   enrollUserCourse,
   isUserEnrolled,
   getPopularCourses,
-  filterCourses
+  filterCourses,
+  updateModule
 } from "./course.dao";
 interface CreateCourseData {
   title: string;
   description: string;
-}
-interface CreateModuleData {
-  courseId: string;
-  title: string;
-  content: string;
-  order: number;
 }
 
 export const handleCreateCourse = async (
@@ -29,18 +30,21 @@ export const handleCreateCourse = async (
     createdById: userId,
   });
 };
-
 export const handleCreateModule = async (data: CreateModuleData) => {
   const validatedData = createModuleSchema.parse(data);
   return await createModule(validatedData);
 };
 
+export const handleUpdateModule = async (data: UpdateModuleData, module_id:string) => {
+  const validatedData = updateModuleSchema.parse(data);
+  return await updateModule(validatedData, module_id);
+};
 export const handleGetCourses = async (query: any) => {
   const page = parseInt(query.page) || 1;
   const limit = parseInt(query.limit) || 10;
   const sort = query.sort || "createdAt";
   const order = query.order || "desc";
-  const title = query.title || '';
+  const title = query.title || "";
   return await getAllCourses({
     page,
     limit,
