@@ -32,6 +32,29 @@ export const createCourse = async (data: {
   }
 };
 
+export const getCourseById = async (courseId: string) => {
+  try {
+    return await prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        modules: {
+          include: {
+            moduleContent: true,
+          }
+        },
+        createdBy: {
+          select: {
+            username: true,
+            email: true,
+          }
+        },
+      }
+    });
+  } catch (error) {
+    throw new Error("Error fetching course");
+  }
+};
+
 export const getAllCourses = async ({
   page = 1,
   limit = 10,
@@ -80,6 +103,63 @@ export const getAllCourses = async ({
   }
 };
 
+export const updateCourseVisability = async (courseId: string, isVisible: boolean) => {
+  try {
+    return await prisma.course.update({
+      where: { id: courseId },
+      data: {
+        hidden: isVisible,
+      },
+      include: {
+        modules: {
+          include: {
+            moduleContent: true,
+          }
+        },
+        createdBy: {
+          select: {
+            username: true,
+            email: true,
+          } 
+        },
+      }
+    })
+  } catch (error) {
+    throw new Error("Error updating course visibility");
+    
+  }
+}
+
+export const deleteCourse = async (courseId: string) => {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const course = await tx.course.findUnique({
+        where: { id: courseId },
+        include: {
+          modules: {
+            include: {
+              moduleContent: true,
+            }
+          }
+        }
+      })
+
+      if (!course) {
+        throw new Error("Course not found");
+      }
+
+      await tx.moduleContent.deleteMany({ where: { moduleId: { in: course.modules.map((module) => module.id) } } })
+      await tx.module.deleteMany({ where: { courseId } })
+      return await tx.course.delete({
+        where: { id: courseId },
+      });
+    })
+  } catch (error) {
+    throw new Error("Error deleting course");
+    
+  }
+}
+
 export const createModule = async (data: CreateModuleData) => {
   try {
     return await prisma.$transaction(async (tx) => {
@@ -111,7 +191,7 @@ export const createModule = async (data: CreateModuleData) => {
   }
 };
 
-export const updateModule = async (data: UpdateModuleData, module_id: string) => {
+export const updateModule = async (data: UpdateModuleData, module_id: string)  => {
   try {
     return await prisma.$transaction(async (tx) => {
       const updateModule = await tx.module.update({

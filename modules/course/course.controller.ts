@@ -7,6 +7,10 @@ import {
   handleGetPopularCourses,
   handleFilterCourses,
   handleUpdateModule,
+  handleGetCourseById,
+  handleUpdateCourseVisability,
+  handleDeleteCourse,
+  handleDeleteModule,
 } from "./course.service";
 
 export const createCourseHandler = async (
@@ -25,6 +29,76 @@ export const createCourseHandler = async (
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+export const getCourseByIdHandler = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { course_id } = req.params;
+    if (!course_id) {
+      res.status(400).json({ error: "Course ID is required" });
+      return;
+    }
+    const course = await handleGetCourseById(course_id as string);
+    if (!course) {
+      res.status(404).json({ error: "Course not found" });
+      return;
+    }
+    res.status(200).json(course);
+  } catch (error) {
+    console.error("Error fetching course:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const updateCourseVisabilityHandler = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { course_id } = req.params;
+    if (!course_id) {
+      res.status(400).json({ error: "Course ID is required" });
+      return;
+    }
+    const course = await handleUpdateCourseVisability(
+      course_id as string,
+      req.body.isVisible
+    );
+    if (!course) {
+      res.status(404).json({ error: "Course not found" });
+      return;
+    }
+    res.status(200).json(course);
+  } catch (error) {
+    console.error("Error updating course visibility:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const deleteCourseHandler = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { course_id } = req.params;
+    if (!course_id) {
+      res.status(400).json({ error: "Course ID is required" });
+      return;
+    }
+    const course = await handleDeleteCourse(course_id as string);
+    if (!course) {
+      res.status(404).json({ error: "Course not found" });
+      return;
+    }
+    res.status(200).json(course);
+  } catch (error) {
+    console.error("Error deleting course:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
 export const createModuleHandler = async (req: Request, res: Response) => {
   try {
     const module = await handleCreateModule(req.body);
@@ -36,20 +110,38 @@ export const createModuleHandler = async (req: Request, res: Response) => {
 };
 
 export const updateModuleHandler = async (req: Request, res: Response) => {
-  console.log(req.query.module_id, req.body)
   try {
-    const module_id = req.query.module_id as string | undefined;
+    const { module_id } = req.params;
     if (!module_id) {
       res.status(400).json({ error: "Module ID is required" });
       return;
     }
-    const module = await handleUpdateModule(req.body, module_id);
+    const module = await handleUpdateModule(req.body, module_id as string);
+    if (!module) {
+      res.status(404).json({ error: "Module not found" });
+      return;
+    }
     res.status(200).json(module);
   } catch (error) {
     console.error("Error updating module:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+export const deleteModuleHandler = async (req: Request, res: Response) => {
+  try {
+    const { module_id } = req.params;
+    if (!module_id) {
+      res.status(400).json({ error: "Module ID is required" });
+      return;
+    }
+    await handleDeleteModule(module_id as string);
+    res.status(200).send("Module deleted successfully");
+  } catch (error) {
+    console.error("Error deleting module:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
 
 export const getCoursesHandler = async (req: Request, res: Response) => {
   try {

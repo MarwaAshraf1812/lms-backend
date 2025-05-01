@@ -13,7 +13,11 @@ import {
   isUserEnrolled,
   getPopularCourses,
   filterCourses,
-  updateModule
+  updateModule,
+  getCourseById,
+  updateCourseVisability,
+  deleteCourse,
+  deleteModule,
 } from "./course.dao";
 interface CreateCourseData {
   title: string;
@@ -30,6 +34,32 @@ export const handleCreateCourse = async (
     createdById: userId,
   });
 };
+
+export const handleGetCourseById = async (courseId: string) => {
+  const course = await getCourseById(courseId);
+  if (!course) {
+    throw new Error("Course not found");
+  }
+  return course;
+}
+
+export const handleUpdateCourseVisability = async (courseId: string, isVisible: boolean) => {
+  const course = await getCourseById(courseId);
+  if (!course) {
+    throw new Error("Course not found");
+  }
+
+  return await updateCourseVisability(courseId, isVisible);
+}
+
+export const handleDeleteCourse = async (courseId: string) => {
+  const course = await getCourseById(courseId);
+  if (!course) {
+    throw new Error("Course not found");
+  }
+  return await deleteCourse(courseId);
+}
+
 export const handleCreateModule = async (data: CreateModuleData) => {
   const validatedData = createModuleSchema.parse(data);
   return await createModule(validatedData);
@@ -39,6 +69,15 @@ export const handleUpdateModule = async (data: UpdateModuleData, module_id:strin
   const validatedData = updateModuleSchema.parse(data);
   return await updateModule(validatedData, module_id);
 };
+
+export const handleDeleteModule = async (moduleId: string) =>   {
+  const module = await getCourseById(moduleId);
+  if (!module) {
+    throw new Error("Module not found");
+  }
+  return await deleteModule(moduleId);
+}
+
 export const handleGetCourses = async (query: any) => {
   const page = parseInt(query.page) || 1;
   const limit = parseInt(query.limit) || 10;
