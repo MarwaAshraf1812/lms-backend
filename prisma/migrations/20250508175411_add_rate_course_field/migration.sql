@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Course" ADD COLUMN     "rate" DOUBLE PRECISION NOT NULL DEFAULT 0;

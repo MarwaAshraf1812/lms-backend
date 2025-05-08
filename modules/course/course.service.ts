@@ -97,6 +97,7 @@ export const handleEnrollment = async (userId: string, courseId: string) => {
   try {
     const isEnrolled = await isUserEnrolled(userId, courseId);
     if (isEnrolled) {
+      return ("User is already enrolled in this course");
       throw new Error("User is already enrolled in this course");
     }
     return await enrollUserCourse(userId, courseId);

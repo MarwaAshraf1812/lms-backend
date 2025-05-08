@@ -17,6 +17,10 @@ import { authMiddleware, roleMiddleware } from '../auth/auth.middleware';
 
 const router = Router();
 
+// 🔥 Popular & filtered
+router.get('/filter', filterCoursesHandler);
+router.get('/popular', getPopularCoursesHandler);
+
 // 🔐 Protected routes for admins/teachers
 router.post('/', authMiddleware, roleMiddleware(['ADMIN', 'INSTRUCTOR']), createCourseHandler);
 router.get('/:course_id', authMiddleware, roleMiddleware(['ADMIN', 'INSTRUCTOR']), getCourseByIdHandler)
@@ -27,12 +31,10 @@ router.put('/module/:module_id', authMiddleware, roleMiddleware(['ADMIN', 'INSTR
 router.delete('/module/:module_id', authMiddleware, roleMiddleware(['ADMIN', 'INSTRUCTOR']), deleteModuleHandler);
 
 // 📚 Public/student routes
-router.get('/', authMiddleware, getCoursesHandler);
+router.get('/', getCoursesHandler);
 router.post('/enroll', authMiddleware, roleMiddleware(['STUDENT']), enrollUserHandler);
 
-// 🔥 Popular & filtered
-router.get('/popular', authMiddleware, getPopularCoursesHandler);
-router.get('/filter', authMiddleware, filterCoursesHandler);
+
 
 
 // 🔥 instructors/students dashboards

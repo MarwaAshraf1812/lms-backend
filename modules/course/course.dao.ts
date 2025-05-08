@@ -3,6 +3,7 @@ import redis from "../../config/redis";
 import { CreateModuleData, UpdateModuleData } from "./course.dto";
 
 const POPULAR_COURSES_KEY = "popular_courses";
+const FILTERED_COURSES_KEY = "filtered_courses";
 
 export const createCourse = async (data: {
   title: string;
@@ -278,21 +279,29 @@ export const getPopularCourses = async () => {
   try {
     const cachedCourses = await redis.get(POPULAR_COURSES_KEY);
     if (cachedCourses) {
+      console.log("Cache hit for popular courses");
       return JSON.parse(cachedCourses);
     }
 
+
     const popularCourses = await prisma.course.findMany({
-      orderBy: {
-        enrollments: {
-          _count: "desc",
+      orderBy: [
+        {
+          enrollments: {
+            _count: "desc",
+          },
         },
-      },
+        {
+          rate: "desc",
+        },
+      ],
       take: 10,
     });
 
     await redis.set(POPULAR_COURSES_KEY, JSON.stringify(popularCourses), {
       EX: 60, // Cache for 1 minute
     });
+    console.log("Popular courses cached");
 
     return popularCourses;
   } catch (error) {
@@ -300,25 +309,135 @@ export const getPopularCourses = async () => {
   }
 };
 
+export const getCategoryByName = async (categoryName: string) => {
+  try {
+    return await prisma.category.findUnique({
+      where: { name: categoryName },
+    });
+  } catch (error) {
+    throw new Error("Error fetching category");
+  }
+};
+
 export const filterCourses = async (query: {
   search?: string;
-  categoryId?: string;
+  category?: string;
   level?: string;
 }) => {
   try {
-    const { search, categoryId, level } = query;
+    const filters: any = {};
 
-    return await prisma.course.findMany({
-      where: {
-        AND: [
-          search ? { title: { contains: search, mode: "insensitive" } } : {},
-          categoryId ? { categoryId } : {},
-          level ? { level } : {},
-        ],
-      },
+    const cashedCourses = await redis.get(FILTERED_COURSES_KEY);
+    if (cashedCourses) {
+      console.log("Cache hit for filtered courses");
+      return JSON.parse(cashedCourses);
+    }
+    console.log("Cache miss for filtered courses");
+
+    if (query.category) {
+      const categoryData = await getCategoryByName(query.category);
+      console.log(categoryData);
+      if (categoryData) {
+        filters.categoryId = categoryData.id;
+      } else {
+        return "No category found";
+      }
+    }
+
+    if (query.search) {
+      filters.title = { contains: query.search, mode: "insensitive" };
+    }
+    if (query.level) {
+      filters.level = query.level;
+    }
+
+    const courses = await prisma.course.findMany({
+      where: filters,
     });
+
+    await redis.set(FILTERED_COURSES_KEY, JSON.stringify(courses), {
+      EX: 60, // Cache for 1 minute
+    });
+    console.log("Filtered courses cached");
+
+    return courses;
   } catch (error) {
     console.error(error);
     throw new Error("Error filtering courses");
   }
 };
+
+export const rateCourse = async (userId: string, courseId: string, rate: number) => {
+  try {
+    if (rate < 1 || rate > 5) {
+      throw new Error("Rating must be between 1 and 5");
+    }
+
+    // Check if the user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Check if the course exists
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+    });
+    if (!course) {
+      throw new Error("Course not found");
+    }
+
+    // Check if the user has already rated the course
+    const existingRating = await prisma.courseRating.findUnique({
+      where: {
+        userId_courseId: {
+          userId,
+          courseId,
+        },
+      },
+    });
+
+    if (existingRating) {
+      throw new Error("User has already rated this course");
+    }
+
+    // Create a new rating
+    const newRating = await prisma.courseRating.create({
+      data: {
+        userId,
+        courseId,
+        rating: rate,
+      },
+    });
+
+    // Get the updated sum and count of ratings
+    const { _sum, _count } = await prisma.courseRating.aggregate({
+      where: { courseId },
+      _sum: { rating: true },
+      _count: true,
+    });
+
+    // Calculate the new average rating
+    const averageRating = _sum.rating  ?? 0  / _count;
+
+    // Update the course with the new average rating
+    const updatedCourse = await prisma.course.update({
+      where: { id: courseId },
+      data: {
+        rate: averageRating,
+      },
+    });
+
+    return {
+      ...updatedCourse,
+      averageRating,
+      totalRatings: _count,
+    };
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error rating course");
+  }
+};
+
