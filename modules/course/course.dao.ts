@@ -1,6 +1,7 @@
 import { prisma } from "../../config/prisma";
 import redis from "../../config/redis";
 import { CreateModuleData, UpdateModuleData } from "./course.dto";
+import { RateCourseResponse, CourseRating } from "../../types/responses";
 
 const POPULAR_COURSES_KEY = "popular_courses";
 const FILTERED_COURSES_KEY = "filtered_courses";
@@ -21,10 +22,10 @@ export const createCourse = async (data: {
           select: {
             username: true,
             email: true,
-          }
+          },
         },
         modules: true,
-      }
+      },
     });
 
     return course;
@@ -41,15 +42,15 @@ export const getCourseById = async (courseId: string) => {
         modules: {
           include: {
             moduleContent: true,
-          }
+          },
         },
         createdBy: {
           select: {
             username: true,
             email: true,
-          }
+          },
         },
-      }
+      },
     });
   } catch (error) {
     throw new Error("Error fetching course");
@@ -87,9 +88,9 @@ export const getAllCourses = async ({
           select: {
             username: true,
             email: true,
-          }
+          },
         },
-      }
+      },
     });
 
     const totalCourses = await prisma.course.count({ where });
@@ -104,7 +105,10 @@ export const getAllCourses = async ({
   }
 };
 
-export const updateCourseVisability = async (courseId: string, isVisible: boolean) => {
+export const updateCourseVisability = async (
+  courseId: string,
+  isVisible: boolean
+) => {
   try {
     return await prisma.course.update({
       where: { id: courseId },
@@ -115,21 +119,20 @@ export const updateCourseVisability = async (courseId: string, isVisible: boolea
         modules: {
           include: {
             moduleContent: true,
-          }
+          },
         },
         createdBy: {
           select: {
             username: true,
             email: true,
-          } 
+          },
         },
-      }
-    })
+      },
+    });
   } catch (error) {
     throw new Error("Error updating course visibility");
-    
   }
-}
+};
 
 export const deleteCourse = async (courseId: string) => {
   try {
@@ -140,26 +143,27 @@ export const deleteCourse = async (courseId: string) => {
           modules: {
             include: {
               moduleContent: true,
-            }
-          }
-        }
-      })
+            },
+          },
+        },
+      });
 
       if (!course) {
         throw new Error("Course not found");
       }
 
-      await tx.moduleContent.deleteMany({ where: { moduleId: { in: course.modules.map((module) => module.id) } } })
-      await tx.module.deleteMany({ where: { courseId } })
+      await tx.moduleContent.deleteMany({
+        where: { moduleId: { in: course.modules.map((module) => module.id) } },
+      });
+      await tx.module.deleteMany({ where: { courseId } });
       return await tx.course.delete({
         where: { id: courseId },
       });
-    })
+    });
   } catch (error) {
     throw new Error("Error deleting course");
-    
   }
-}
+};
 
 export const createModule = async (data: CreateModuleData) => {
   try {
@@ -171,28 +175,31 @@ export const createModule = async (data: CreateModuleData) => {
           order: data.order,
         },
       });
-    
-    if (data.content && data.content.length > 0) {
-      await tx.moduleContent.createMany({
-        data: data.content.map((content) => ({
-          ...content,
-          moduleId: module.id,
-        }))
-      })
-    }    
-    return await tx.module.findUnique({
-      where: { id: module.id },
-      include: {
-        moduleContent: true,
+
+      if (data.content && data.content.length > 0) {
+        await tx.moduleContent.createMany({
+          data: data.content.map((content) => ({
+            ...content,
+            moduleId: module.id,
+          })),
+        });
       }
-    })
-  })
+      return await tx.module.findUnique({
+        where: { id: module.id },
+        include: {
+          moduleContent: true,
+        },
+      });
+    });
   } catch (error) {
     throw new Error("Error creating module");
   }
 };
 
-export const updateModule = async (data: UpdateModuleData, module_id: string)  => {
+export const updateModule = async (
+  data: UpdateModuleData,
+  module_id: string
+) => {
   try {
     return await prisma.$transaction(async (tx) => {
       const updateModule = await tx.module.update({
@@ -200,52 +207,50 @@ export const updateModule = async (data: UpdateModuleData, module_id: string)  =
         data: {
           title: data.title,
           order: data.order,
-        }
-      })
+        },
+      });
 
       if (data.content) {
-        await tx.moduleContent.deleteMany({ where : { moduleId: module_id} })
+        await tx.moduleContent.deleteMany({ where: { moduleId: module_id } });
         await tx.moduleContent.createMany({
           data: data.content.map((content) => ({
             ...content,
             moduleId: updateModule.id,
-          }))
-        })
+          })),
+        });
       }
 
       return await tx.module.findUnique({
         where: { id: updateModule.id },
         include: {
           moduleContent: true,
-        }
-      })
-    })
+        },
+      });
+    });
   } catch (error) {
     throw new Error("Error updating module");
-    
   }
-}
+};
 
-export const deleteModule = async (moduleId : string) => {
+export const deleteModule = async (moduleId: string) => {
   try {
     return await prisma.$transaction(async (tx) => {
       const module = await tx.module.findUnique({
         where: { id: moduleId },
         include: {
           moduleContent: true,
-        }
-      })
+        },
+      });
 
       if (!module) {
         throw new Error("Module not found");
       }
-      await tx.moduleContent.deleteMany({ where: { moduleId } })
-    })
+      await tx.moduleContent.deleteMany({ where: { moduleId } });
+    });
   } catch (error) {
     throw new Error("Error deleting module");
-    
   }
-}
+};
 
 export const enrollUserCourse = async (userId: string, courseId: string) => {
   try {
@@ -282,7 +287,6 @@ export const getPopularCourses = async () => {
       console.log("Cache hit for popular courses");
       return JSON.parse(cachedCourses);
     }
-
 
     const popularCourses = await prisma.course.findMany({
       orderBy: [
@@ -367,13 +371,13 @@ export const filterCourses = async (query: {
   }
 };
 
-export const rateCourse = async (userId: string, courseId: string, rate: number) => {
+export const rateCourse = async (
+  userId: string,
+  courseId: string,
+  rate: number,
+  comment?: string
+): Promise<RateCourseResponse> => {
   try {
-    if (rate < 1 || rate > 5) {
-      throw new Error("Rating must be between 1 and 5");
-    }
-
-    // Check if the user exists
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -381,7 +385,6 @@ export const rateCourse = async (userId: string, courseId: string, rate: number)
       throw new Error("User not found");
     }
 
-    // Check if the course exists
     const course = await prisma.course.findUnique({
       where: { id: courseId },
     });
@@ -389,7 +392,6 @@ export const rateCourse = async (userId: string, courseId: string, rate: number)
       throw new Error("Course not found");
     }
 
-    // Check if the user has already rated the course
     const existingRating = await prisma.courseRating.findUnique({
       where: {
         userId_courseId: {
@@ -403,41 +405,50 @@ export const rateCourse = async (userId: string, courseId: string, rate: number)
       throw new Error("User has already rated this course");
     }
 
-    // Create a new rating
-    const newRating = await prisma.courseRating.create({
-      data: {
+    const newRating = await prisma.courseRating.upsert({
+      where: {
+        userId_courseId: {
+          userId,
+          courseId,
+        },
+      },
+      update: {
+        rating: rate,
+        comment: comment ?? "This course is great!",
+      },
+      create: {
         userId,
         courseId,
         rating: rate,
+        comment: comment ?? "This course is great!",
       },
     });
 
-    // Get the updated sum and count of ratings
     const { _sum, _count } = await prisma.courseRating.aggregate({
       where: { courseId },
       _sum: { rating: true },
       _count: true,
     });
 
-    // Calculate the new average rating
-    const averageRating = _sum.rating  ?? 0  / _count;
+    const averageRating = (_sum.rating ?? 0) / _count;
 
-    // Update the course with the new average rating
-    const updatedCourse = await prisma.course.update({
+    await prisma.course.update({
       where: { id: courseId },
       data: {
         rate: averageRating,
       },
     });
 
+    const message = existingRating ? "Rating updated" : "Rating created";
+
     return {
-      ...updatedCourse,
       averageRating,
       totalRatings: _count,
+      userRating: newRating,
+      message,
     };
   } catch (error) {
     console.error(error);
     throw new Error("Error rating course");
   }
 };
-

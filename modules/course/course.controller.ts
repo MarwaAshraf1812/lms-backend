@@ -11,6 +11,7 @@ import {
   handleUpdateCourseVisability,
   handleDeleteCourse,
   handleDeleteModule,
+  handleRateCourse
 } from "./course.service";
 
 export const createCourseHandler = async (
@@ -196,3 +197,25 @@ export const filterCoursesHandler = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+export const rateCourseHandler = async (req: Request, res: Response) => {
+  console.log("Rate course handler called");
+  console.log("Request body:", req.body);
+  try {
+    const userId = req.user?.id as string;
+    const courseId = req.params.course_id;
+    const {rate, comment} = req.body;
+
+    if (!userId || !courseId || !rate) {
+      res.status(400).json({ error: "User ID, Course ID, and Rate are required" });
+      return;
+    }
+
+    const rating = await handleRateCourse(userId, courseId, rate, comment);
+    res.status(201).json(rating);
+  } catch (error) {
+    console.error("Error rating course:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    res.status(500).json({ error: errorMessage });
+  }
+}

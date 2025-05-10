@@ -11,6 +11,7 @@ import {
   updateCourseVisabilityHandler,
   deleteCourseHandler,
   deleteModuleHandler,
+  rateCourseHandler,
 } from './course.controller';
 
 import { authMiddleware, roleMiddleware } from '../auth/auth.middleware';
@@ -33,15 +34,6 @@ router.delete('/module/:module_id', authMiddleware, roleMiddleware(['ADMIN', 'IN
 // 📚 Public/student routes
 router.get('/', getCoursesHandler);
 router.post('/enroll', authMiddleware, roleMiddleware(['STUDENT']), enrollUserHandler);
-
-
-
-
-// 🔥 instructors/students dashboards
-// router.get('/dashboard', authMiddleware, roleMiddleware('INSTRUCTOR']), getDashboardHandler);
-// router.get('/dashboard/:user_id', authMiddleware, roleMiddleware(['STUDENT']), getDashboardHandler);
-// router.get('/dashboard/:user_id/courses', authMiddleware, roleMiddleware(['STUDENT']), getDashboardCoursesHandler);
-// router.get('/dashboard/:user_id/courses/:course_id', authMiddleware, roleMiddleware(['STUDENT']), getDashboardCourseHandler);
-// router.get('/dashboard/:user_id/courses/:course_id/modules', authMiddleware, roleMiddleware(['STUDENT']), getDashboardModulesHandler);
+router.post('/rate/:course_id', authMiddleware, roleMiddleware(['STUDENT']), rateCourseHandler);
 
 export default router;

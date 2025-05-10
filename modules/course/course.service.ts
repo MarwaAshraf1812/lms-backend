@@ -18,6 +18,7 @@ import {
   updateCourseVisability,
   deleteCourse,
   deleteModule,
+  rateCourse,
 } from "./course.dao";
 interface CreateCourseData {
   title: string;
@@ -121,3 +122,15 @@ export const handleFilterCourses = async (filters: any) => {
     throw new Error("Error filtering courses");
   }
 };
+
+export const handleRateCourse = async (userId: string, courseId: string, rate: number, comment?: string ) => {
+  try {
+    if (rate < 1 || rate > 5) {
+      return { message : "Rating must be between 1 and 5" };
+    }
+    return await rateCourse(userId, courseId, rate, comment);
+  } catch (error) {
+    throw new Error("Error rating course");
+  }
+
+}
