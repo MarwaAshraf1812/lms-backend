@@ -46,4 +46,19 @@ export const getUserEnrollments = async (userId: string) => {
   } catch (error) {
     throw new Error("Error fetching user enrollments");
   }
+};
+
+export const unEnrollUserCourse = async (userId: string, courseId: string) => {
+  try {
+    return prisma.enrollment.delete({
+      where: {
+        userId_courseId: {
+          userId,
+          courseId,
+        },
+      },
+    });
+  } catch (error) {
+    throw new Error("Error unenrolling user from course");
+  }
 }
