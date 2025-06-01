@@ -27,3 +27,23 @@ export const isUserEnrolled = async (userId: string, courseId: string) => {
     throw new Error("Error checking user enrollment");
   }
 };
+
+export const getUserEnrollments = async (userId: string) => {
+  try {
+    return prisma.enrollment.findMany({
+      where: { userId },
+      include: {
+        course: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+  } catch (error) {
+    throw new Error("Error fetching user enrollments");
+  }
+}

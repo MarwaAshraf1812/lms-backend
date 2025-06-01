@@ -11,7 +11,8 @@ import {
   handleUpdateCourseVisability,
   handleDeleteCourse,
   handleDeleteModule,
-  handleRateCourse
+  handleRateCourse,
+  handleGetUserEnrollments
 } from "./course.service";
 
 export const createCourseHandler = async (
@@ -216,3 +217,18 @@ export const rateCourseHandler = async (req: Request, res: Response) => {
     res.status(500).json({ error: errorMessage });
   }
 }
+
+export const GetUserEnrollmentsHandler = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id as string;
+    if (!userId) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+    const enrollments = await handleGetUserEnrollments(userId);
+    res.status(200).json(enrollments);
+  } catch (error) {
+    console.error("Error fetching user enrollments:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};

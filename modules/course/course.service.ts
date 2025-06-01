@@ -16,7 +16,7 @@ import {
 } from "./dao/course.dao";
 import { isUserRatedCourse, rateCourse } from "./courseRating.service";
 import { deleteModule, createModule, updateModule } from "./dao/module.dao";
-import { enrollUserCourse, isUserEnrolled } from "./dao/enrollment.dao";
+import { enrollUserCourse, getUserEnrollments, isUserEnrolled } from "./dao/enrollment.dao";
 interface CreateCourseData {
   title: string;
   description: string;
@@ -145,3 +145,11 @@ export const handleRateCourse = async (
     throw new Error(error instanceof Error ? error.message : String(error));
   }
 };
+
+export const handleGetUserEnrollments = async (userId: string) => {
+  try {
+    return await getUserEnrollments(userId);
+  } catch (error) {
+    throw new Error("Error fetching user enrollments");
+  }
+}

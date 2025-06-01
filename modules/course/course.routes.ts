@@ -12,6 +12,7 @@ import {
   deleteCourseHandler,
   deleteModuleHandler,
   rateCourseHandler,
+  GetUserEnrollmentsHandler
 } from './course.controller';
 
 import { authMiddleware, roleMiddleware } from '../auth/auth.middleware';
@@ -35,5 +36,6 @@ router.delete('/module/:module_id', authMiddleware, roleMiddleware(['ADMIN', 'IN
 router.get('/', getCoursesHandler);
 router.post('/enroll', authMiddleware, roleMiddleware(['STUDENT']), enrollUserHandler);
 router.post('/rate/:course_id', authMiddleware, roleMiddleware(['STUDENT']), rateCourseHandler);
+router.get('/enrollments', authMiddleware, roleMiddleware(['STUDENT']), GetUserEnrollmentsHandler);
 
 export default router;
