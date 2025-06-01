@@ -25,7 +25,7 @@ router.get('/popular', getPopularCoursesHandler);
 
 // 🔐 Protected routes for admins/teachers
 router.post('/', authMiddleware, roleMiddleware(['ADMIN', 'INSTRUCTOR']), createCourseHandler);
-router.get('/:course_id', authMiddleware, roleMiddleware(['ADMIN', 'INSTRUCTOR']), getCourseByIdHandler)
+router.get('/:course_id', authMiddleware, roleMiddleware(['ADMIN', 'INSTRUCTOR', 'STUDENT']), getCourseByIdHandler)
 router.delete('/:course_id', authMiddleware, roleMiddleware(['ADMIN', 'INSTRUCTOR']), deleteCourseHandler);
 router.put('/visability/:course_id', authMiddleware, roleMiddleware(['ADMIN', 'INSTRUCTOR']), updateCourseVisabilityHandler);
 router.post('/module', authMiddleware, roleMiddleware(['ADMIN', 'INSTRUCTOR']), createModuleHandler);

@@ -83,6 +83,22 @@ export const getAllCourses = async ({
       },
       include: {
         modules: true,
+        enrollments: {
+          select: {
+            userId: true,
+            user: {
+              select: {
+                username: true,
+                email: true,
+              },
+            },
+          },
+        },
+      _count: {
+          select: {
+            enrollments: true,
+          },
+        },
         createdBy: {
           select: {
             username: true,
