@@ -199,8 +199,6 @@ export const filterCoursesHandler = async (req: Request, res: Response) => {
 };
 
 export const rateCourseHandler = async (req: Request, res: Response) => {
-  console.log("Rate course handler called");
-  console.log("Request body:", req.body);
   try {
     const userId = req.user?.id as string;
     const courseId = req.params.course_id;
@@ -214,7 +212,6 @@ export const rateCourseHandler = async (req: Request, res: Response) => {
     const rating = await handleRateCourse(userId, courseId, rate, comment);
     res.status(201).json(rating);
   } catch (error) {
-    console.error("Error rating course:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     res.status(500).json({ error: errorMessage });
   }

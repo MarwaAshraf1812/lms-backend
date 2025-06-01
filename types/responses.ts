@@ -1,5 +1,3 @@
-type RateCourseMessage = "Rating updated" | "Rating created"
-
 export type CourseRating = {
   userId: string;
   courseId: string;
@@ -7,11 +5,9 @@ export type CourseRating = {
   comment?: string | null;
 }
 
-
-export type RateCourseResponse = {
+export interface RateCourseResponse {
   averageRating: number;
   totalRatings: number;
-  userRating: CourseRating;
-  comment?: string | null;
-  message: RateCourseMessage;
+  userRating: any;
+  message: string;
 }

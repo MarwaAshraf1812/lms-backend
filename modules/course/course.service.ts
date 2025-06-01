@@ -8,18 +8,15 @@ import {
 import {
   createCourse,
   getAllCourses,
-  createModule,
-  enrollUserCourse,
-  isUserEnrolled,
   getPopularCourses,
   filterCourses,
-  updateModule,
   getCourseById,
   updateCourseVisability,
   deleteCourse,
-  deleteModule,
-  rateCourse,
-} from "./course.dao";
+} from "./dao/course.dao";
+import { isUserRatedCourse, rateCourse } from "./courseRating.service";
+import { deleteModule, createModule, updateModule } from "./dao/module.dao";
+import { enrollUserCourse, isUserEnrolled } from "./dao/enrollment.dao";
 interface CreateCourseData {
   title: string;
   description: string;
@@ -42,16 +39,19 @@ export const handleGetCourseById = async (courseId: string) => {
     throw new Error("Course not found");
   }
   return course;
-}
+};
 
-export const handleUpdateCourseVisability = async (courseId: string, isVisible: boolean) => {
+export const handleUpdateCourseVisability = async (
+  courseId: string,
+  isVisible: boolean
+) => {
   const course = await getCourseById(courseId);
   if (!course) {
     throw new Error("Course not found");
   }
 
   return await updateCourseVisability(courseId, isVisible);
-}
+};
 
 export const handleDeleteCourse = async (courseId: string) => {
   const course = await getCourseById(courseId);
@@ -59,25 +59,28 @@ export const handleDeleteCourse = async (courseId: string) => {
     throw new Error("Course not found");
   }
   return await deleteCourse(courseId);
-}
+};
 
 export const handleCreateModule = async (data: CreateModuleData) => {
   const validatedData = createModuleSchema.parse(data);
   return await createModule(validatedData);
 };
 
-export const handleUpdateModule = async (data: UpdateModuleData, module_id:string) => {
+export const handleUpdateModule = async (
+  data: UpdateModuleData,
+  module_id: string
+) => {
   const validatedData = updateModuleSchema.parse(data);
   return await updateModule(validatedData, module_id);
 };
 
-export const handleDeleteModule = async (moduleId: string) =>   {
+export const handleDeleteModule = async (moduleId: string) => {
   const module = await getCourseById(moduleId);
   if (!module) {
     throw new Error("Module not found");
   }
   return await deleteModule(moduleId);
-}
+};
 
 export const handleGetCourses = async (query: any) => {
   const page = parseInt(query.page) || 1;
@@ -98,8 +101,7 @@ export const handleEnrollment = async (userId: string, courseId: string) => {
   try {
     const isEnrolled = await isUserEnrolled(userId, courseId);
     if (isEnrolled) {
-      return ("User is already enrolled in this course");
-      throw new Error("User is already enrolled in this course");
+      return "User is already enrolled in this course";
     }
     return await enrollUserCourse(userId, courseId);
   } catch (error) {
@@ -123,14 +125,23 @@ export const handleFilterCourses = async (filters: any) => {
   }
 };
 
-export const handleRateCourse = async (userId: string, courseId: string, rate: number, comment?: string ) => {
+export const handleRateCourse = async (
+  userId: string,
+  courseId: string,
+  rate: number,
+  comment?: string
+) => {
   try {
     if (rate < 1 || rate > 5) {
-      return { message : "Rating must be between 1 and 5" };
+      return { message: "Rating must be between 1 and 5" };
+    }
+
+    const isRated = await isUserRatedCourse(userId, courseId);
+    if (isRated) {
+      return { message: "User has already rated this course" };
     }
     return await rateCourse(userId, courseId, rate, comment);
   } catch (error) {
-    throw new Error("Error rating course");
+    throw new Error(error instanceof Error ? error.message : String(error));
   }
-
-}
+};
