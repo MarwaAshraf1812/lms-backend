@@ -4,7 +4,7 @@ import {
   createModuleSchema,
   UpdateModuleData,
   updateModuleSchema,
-} from "./course.dto";
+} from "./course.validation";
 import {
   createCourse,
   getAllCourses,
@@ -13,6 +13,7 @@ import {
   getCourseById,
   updateCourseVisability,
   deleteCourse,
+  updateCourseStatus,
 } from "./dao/course.dao";
 import { isUserRatedCourse, rateCourse } from "./courseRating.service";
 import { deleteModule, createModule, updateModule } from "./dao/module.dao";
@@ -30,6 +31,7 @@ export const handleCreateCourse = async (
   return await createCourse({
     ...validatedData,
     createdById: userId,
+    discountEnd: validatedData.discountEnd ? new Date(validatedData.discountEnd) : undefined,
   });
 };
 
@@ -152,4 +154,27 @@ export const handleGetUserEnrollments = async (userId: string) => {
   } catch (error) {
     throw new Error("Error fetching user enrollments");
   }
+}
+
+export const handleUpdateCourseStatus = async (
+  courseId: string,
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED"
+) => {
+  const course = await getCourseById(courseId);
+  if (!course) {
+    return "Course not found";
+  }
+  if (course.status !== status) return "Course status is already set to this value";
+  if (status === "PUBLISHED" && course.modules.length === 0) {
+    return "Cannot publish a course without modules";
+  }
+  if (status === "DRAFT" && course.modules.length > 0) {
+    return "Cannot set a course with modules to draft";
+  }
+  const enrollments = await getUserEnrollments(courseId);
+
+  if (status === "ARCHIVED" && enrollments.length > 0) {
+    return "Cannot archive a course with active enrollments";
+  }
+  return await updateCourseStatus(courseId, status);
 }

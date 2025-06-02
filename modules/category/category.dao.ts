@@ -29,3 +29,13 @@ export const updateCategory = async (id: string, name: string) => {
 export const deleteCategory = async (id: string) => {
   return prisma.category.delete({ where: { id } });
 };
+
+export const getCategoryByName = async (categoryName: string) => {
+  try {
+    return await prisma.category.findUnique({
+      where: { name: categoryName },
+    });
+  } catch (error) {
+    throw new Error("Error fetching category");
+  }
+};

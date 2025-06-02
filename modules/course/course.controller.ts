@@ -12,19 +12,30 @@ import {
   handleDeleteCourse,
   handleDeleteModule,
   handleRateCourse,
-  handleGetUserEnrollments
+  handleGetUserEnrollments,
+  handleUpdateCourseStatus
 } from "./course.service";
+import { createCourseSchema } from "./course.validation";
 
 export const createCourseHandler = async (
   req: Request,
   res: Response
 ) => {
   try {
+    const parsed = createCourseSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        error: "Invalid course data",
+        details: parsed.error.errors,
+      });
+      return;
+    }
     const userId = req.user?.id as string;
     if (!userId) {
       res.status(400).json({ error: "User ID is required" });
+      return;
     }
-    const course = await handleCreateCourse(req.body, userId);
+    const course = await handleCreateCourse(parsed.data, userId);
     res.status(201).json(course);
   } catch (error) {
     console.error("Error creating course:", error);
@@ -232,3 +243,17 @@ export const GetUserEnrollmentsHandler = async (req: Request, res: Response) => 
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+export const updateCourseStatusHandler = async ( req: Request, res: Response) => {
+  try {
+    const course = handleUpdateCourseStatus(
+      req.params.course_id as string,
+      req.body.status as "DRAFT" | "PUBLISHED" | "ARCHIVED"
+    );
+
+    res.status(200).json(course);
+  } catch (error) {
+    console.error("Error updating course status:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}

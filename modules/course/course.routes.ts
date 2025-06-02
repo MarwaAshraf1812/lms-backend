@@ -12,7 +12,8 @@ import {
   deleteCourseHandler,
   deleteModuleHandler,
   rateCourseHandler,
-  GetUserEnrollmentsHandler
+  GetUserEnrollmentsHandler,
+  updateCourseStatusHandler
 } from './course.controller';
 
 import { authMiddleware, roleMiddleware } from '../auth/auth.middleware';
@@ -31,6 +32,7 @@ router.put('/visability/:course_id', authMiddleware, roleMiddleware(['ADMIN', 'I
 router.post('/module', authMiddleware, roleMiddleware(['ADMIN', 'INSTRUCTOR']), createModuleHandler);
 router.put('/module/:module_id', authMiddleware, roleMiddleware(['ADMIN', 'INSTRUCTOR']), updateModuleHandler);
 router.delete('/module/:module_id', authMiddleware, roleMiddleware(['ADMIN', 'INSTRUCTOR']), deleteModuleHandler);
+router.put('/status/:course_id', authMiddleware, roleMiddleware(['ADMIN', 'INSTRUCTOR']), updateCourseVisabilityHandler);
 
 // 📚 Public/student routes
 router.get('/', getCoursesHandler);

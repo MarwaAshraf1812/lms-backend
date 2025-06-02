@@ -1,5 +1,5 @@
 import { prisma } from "../../../config/prisma";
-import { CreateModuleData, UpdateModuleData } from "../course.dto";
+import { CreateModuleData, UpdateModuleData } from "../course.validation";
 
 export const createModule = async (data: CreateModuleData) => {
   try {

@@ -1,4 +1,4 @@
-import {generateQuizOrContent} from './ai.service';
+import {getOrCreateAIResult} from './ai.service';
 import {Request, Response} from 'express';
 
 export const aiQuizSuggestionHandler = async (req: Request, res: Response) => {
@@ -9,7 +9,7 @@ export const aiQuizSuggestionHandler = async (req: Request, res: Response) => {
       return;
     }
 
-    const result = await generateQuizOrContent(topic, type);
+    const result = await getOrCreateAIResult(topic, type);
     res.status(200).json({result});
   } catch (error) {
     res.status(500).json({error: "Internal Server Error"});

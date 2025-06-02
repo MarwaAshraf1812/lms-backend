@@ -1,35 +1,48 @@
+import { Category } from './../../../node_modules/.prisma/client/index.d';
+import { CreateCourseDTO } from './../course.dto';
 import { prisma } from "../../../config/prisma";
 import {
   FILTERED_COURSES_KEY,
   POPULAR_COURSES_KEY,
 } from "../../../types/constants/cacheKeys";
 import { getCachedData, setCachedData } from "../../../cache/cache";
+import { getCategoryByName } from "../../category/category.dao";
 
-export const createCourse = async (data: {
-  title: string;
-  description: string;
-  categoryId: string;
-  level: string;
-  language: string;
-  createdById: string;
-}) => {
+export const createCourse = async (data: CreateCourseDTO) => {
   try {
     const course = await prisma.course.create({
-      data,
+      data: {
+        ...data,
+        requirements: data.requirements || [],
+        prerequisites: data.prerequisites || [],
+        targetAudience: data.targetAudience || [],
+        tags: data.tags || [],
+        discount: data.discount || 0,
+        isFree: data.isFree || false,
+        status: data.status || "DRAFT",
+      },
       include: {
         createdBy: {
           select: {
             username: true,
             email: true,
+            id: false
           },
+        },
+        category: {
+          select: {
+            name: true,
+          }
         },
         modules: true,
       },
     });
 
-    return course;
-  } catch (error) {
-    throw new Error("Error creating course");
+  const { createdById, categoryId , ...rest } = course;
+
+    return rest;
+  } catch (error:any) {
+    throw new Error(error);
   }
 };
 
@@ -85,7 +98,7 @@ export const getAllCourses = async ({
         modules: true,
         enrollments: {
           select: {
-            userId: true,
+            userId: false,
             user: {
               select: {
                 username: true,
@@ -104,6 +117,11 @@ export const getAllCourses = async ({
             username: true,
             email: true,
           },
+        },
+        category: {
+          select: {
+            name: true,
+          }
         },
       },
     });
@@ -208,16 +226,6 @@ export const getPopularCourses = async () => {
   }
 };
 
-export const getCategoryByName = async (categoryName: string) => {
-  try {
-    return await prisma.category.findUnique({
-      where: { name: categoryName },
-    });
-  } catch (error) {
-    throw new Error("Error fetching category");
-  }
-};
-
 export const filterCourses = async (query: {
   search?: string;
   category?: string;
@@ -260,3 +268,26 @@ export const filterCourses = async (query: {
     throw new Error("Error filtering courses");
   }
 };
+
+export const updateCourseStatus = async (
+  courseId: string,
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED"
+) => {
+  try {
+    return await prisma.course.update({
+      where: { id: courseId },
+      data: { status },
+      include: {
+        modules: true,
+        createdBy: {
+          select: {
+            username: true,
+            email: true,
+          },
+        },
+      },
+    });
+  } catch (error) {
+    throw new Error("Error updating course status");
+  }
+}
