@@ -13,7 +13,8 @@ import {
   handleDeleteModule,
   handleRateCourse,
   handleGetUserEnrollments,
-  handleUpdateCourseStatus
+  handleUpdateCourseStatus,
+  handleMarkEnrollmentAsCompleted
 } from "./course.service";
 import { createCourseSchema } from "./course.validation";
 
@@ -256,4 +257,25 @@ export const updateCourseStatusHandler = async ( req: Request, res: Response) =>
     console.error("Error updating course status:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
+}
+
+export const markEnrollmentAsCompedHandler = async (req: Request, res: Response) => {
+  try {
+    const { courseId } = req.body;
+    const userId = req.user?.id as string;
+    if (!courseId || !userId) {
+      res.status(400).json({ error: "Course ID and User ID are required" });
+      return;
+    }
+
+    const courseCompleted  = await handleMarkEnrollmentAsCompleted(userId, courseId);
+    if (!courseCompleted) {
+      res.status(404).json({ error: "Enrollment not found or already completed" });
+      return;
+    }
+  } catch (error) {
+    console.error("Error marking enrollment as completed:", error);
+    res.status(500).json({ error: "Internal Server Error" }); 
+  }
+
 }

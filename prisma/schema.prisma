@@ -8,57 +8,59 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  username      String
-  email     String   @unique
-  role      Role
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  courses   Course[]
+  id          String         @id @default(uuid())
+  username    String
+  email       String         @unique
+  role        Role
+  password    String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  courses     Course[]
   enrollments Enrollment[]
-  ratings   CourseRating[]
+  ratings     CourseRating[]
 }
+
 model Category {
   id        String   @id @default(uuid())
   name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   courses   Course[]
-} 
+}
+
 model Course {
-  id           String   @id @default(uuid())
-  title        String
-  level        String
-  language     String
-  description  String
-  objectives   String[]
-  requirements String[]
-  prerequisites String[]
+  id             String   @id @default(uuid())
+  title          String
+  level          String
+  language       String
+  description    String
+  objectives     String[]
+  requirements   String[]
+  prerequisites  String[]
   targetAudience String[]
 
-  tags         String[]
-  thumbnail    String?
-  durationMinutes Int @default(0)
-  price        Float    @default(0)
-  discount     Float    @default(0)
-  discountEnd  DateTime?
-  isFree       Boolean  @default(false)
+  tags            String[]
+  thumbnail       String?
+  durationMinutes Int       @default(0)
+  price           Float     @default(0)
+  discount        Float     @default(0)
+  discountEnd     DateTime?
+  isFree          Boolean   @default(false)
 
-  hidden       Boolean  @default(false)
-  status       CourseStatus @default(DRAFT)
+  hidden Boolean      @default(false)
+  status CourseStatus @default(DRAFT)
 
-  rate         Float    @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  rate      Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  modules      Module[]
-  createdBy    User     @relation(fields: [createdById], references: [id])
-  createdById  String
-  enrollments  Enrollment[]
-  categoryId   String
-  category     Category @relation(fields: [categoryId], references: [id])
-  ratings      CourseRating[]
+  modules     Module[]
+  createdBy   User           @relation(fields: [createdById], references: [id])
+  createdById String
+  enrollments Enrollment[]
+  categoryId  String
+  category    Category       @relation(fields: [categoryId], references: [id])
+  ratings     CourseRating[]
 }
 
 model CourseRating {
@@ -75,14 +77,15 @@ model CourseRating {
 }
 
 model Module {
-  id        String   @id @default(uuid())
-  title     String
-  order     Int
-  course    Course   @relation(fields: [courseId], references: [id])
-  courseId  String
-  createdAt DateTime @default(now())
+  id            String          @id @default(uuid())
+  title         String
+  order         Int
+  course        Course          @relation(fields: [courseId], references: [id])
+  courseId      String
+  createdAt     DateTime        @default(now())
   moduleContent ModuleContent[]
 }
+
 enum ContentType {
   text
   video
@@ -91,35 +94,37 @@ enum ContentType {
 }
 
 model ModuleContent {
-  id        String   @id @default(uuid())
+  id        String      @id @default(uuid())
   type      ContentType
   data      String?
   url       String?
   alt       String?
   title     String?
-  module    Module   @relation(fields: [moduleId], references: [id])
+  module    Module      @relation(fields: [moduleId], references: [id])
   moduleId  String
-  createdAt DateTime @default(now())
+  createdAt DateTime    @default(now())
 }
 
-
 model Enrollment {
-  id       String   @id @default(uuid())
-  user    User     @relation(fields: [userId], references: [id])
-  userId   String
-  course   Course   @relation(fields: [courseId], references: [id])
-  courseId String
-  createdAt DateTime @default(now())
+  id     String @id @default(uuid())
+  userId String
+
+  courseId    String
+  enrolledAt  DateTime  @default(now())
+  completedAt DateTime?
+
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
 
   @@unique([userId, courseId])
 }
 
 model AIResponse {
-  id String @id @default(uuid())
-  type String // quiz, summary, etc.
-  topic String?
-  prompt String @db.Text
-  response Json
+  id        String   @id @default(uuid())
+  type      String // quiz, summary, etc.
+  topic     String?
+  prompt    String   @db.Text
+  response  Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -135,4 +140,3 @@ enum CourseStatus {
   PUBLISHED
   ARCHIVED
 }
-

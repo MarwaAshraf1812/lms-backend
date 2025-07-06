@@ -13,19 +13,22 @@ export const generateQuizOrContent = async (topic: string, type: AIContentType) 
     resources: `Suggest online resources to learn more about: ${topic}`,
   };
 
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-3.5-turbo-0125',
-    messages: [{ role: 'user', content: promptMap[type] }],
-    temperature: 0.7,
-  });
-
-
   const prompt = promptMap[type];
+
+  // ✅ Check cache BEFORE generating
   const cached = await findAIResponse(type, prompt);
   if (cached) return cached.response;
 
-  const response = completion.choices[0].message.content ||'No response from AI';
-  await saveAIResponse(type, prompt, response);
-  return response;
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-3.5-turbo-0125',
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.7,
+  });
 
+  const response = completion.choices[0].message.content || 'No response from AI';
+
+  await saveAIResponse(type, prompt, response);
+
+  return response;
 };
+

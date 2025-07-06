@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import authRoutes from './modules/auth/auth.routes';
 import courseRoutes from './modules/course/course.routes';
 import categoryRoutes from "./modules/category/category.routes";
+import aiRoutes from './modules/ai/ai.routes';
 dotenv.config();
 
 const app = express();
@@ -15,5 +16,6 @@ app.get('/', (req, res) => {
 app.use('/auth/', authRoutes);
 app.use('/api/courses/', courseRoutes);
 app.use('/api/categories/', categoryRoutes);
+app.use('/api/ai/', aiRoutes);
 
 export default app;

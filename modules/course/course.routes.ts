@@ -13,7 +13,8 @@ import {
   deleteModuleHandler,
   rateCourseHandler,
   GetUserEnrollmentsHandler,
-  updateCourseStatusHandler
+  updateCourseStatusHandler,
+  markEnrollmentAsCompedHandler
 } from './course.controller';
 
 import { authMiddleware, roleMiddleware } from '../auth/auth.middleware';
@@ -39,5 +40,7 @@ router.get('/', getCoursesHandler);
 router.post('/enroll', authMiddleware, roleMiddleware(['STUDENT']), enrollUserHandler);
 router.post('/rate/:course_id', authMiddleware, roleMiddleware(['STUDENT']), rateCourseHandler);
 router.get('/enrollments', authMiddleware, roleMiddleware(['STUDENT']), GetUserEnrollmentsHandler);
+router.put('/status/:course_id', authMiddleware, roleMiddleware(['ADMIN', 'INSTRUCTOR']), updateCourseStatusHandler);
+router.put('/mark-completed/:enrollment_id', authMiddleware, roleMiddleware(['STUDENT']), markEnrollmentAsCompedHandler);
 
 export default router;

@@ -42,6 +42,9 @@ export const getUserEnrollments = async (userId: string) => {
           },
         },
       },
+      orderBy: {
+        enrolledAt: "desc",
+      },
     });
   } catch (error) {
     throw new Error("Error fetching user enrollments");
@@ -61,4 +64,25 @@ export const unEnrollUserCourse = async (userId: string, courseId: string) => {
   } catch (error) {
     throw new Error("Error unenrolling user from course");
   }
-}
+};
+
+export const markEnrollmentAsCompleted = async (
+  userId: string,
+  courseId: string
+) => {
+  try {
+    return prisma.enrollment.update({
+      where: {
+        userId_courseId: {
+          userId,
+          courseId,
+        },
+      },
+      data: {
+        completedAt: new Date(),
+      },
+    });
+  } catch (error) {
+    throw new Error("Error completing course");
+  }
+};

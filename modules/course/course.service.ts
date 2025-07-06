@@ -17,7 +17,7 @@ import {
 } from "./dao/course.dao";
 import { isUserRatedCourse, rateCourse } from "./courseRating.service";
 import { deleteModule, createModule, updateModule } from "./dao/module.dao";
-import { enrollUserCourse, getUserEnrollments, isUserEnrolled } from "./dao/enrollment.dao";
+import { enrollUserCourse, getUserEnrollments, isUserEnrolled, markEnrollmentAsCompleted } from "./dao/enrollment.dao";
 interface CreateCourseData {
   title: string;
   description: string;
@@ -177,4 +177,20 @@ export const handleUpdateCourseStatus = async (
     return "Cannot archive a course with active enrollments";
   }
   return await updateCourseStatus(courseId, status);
+}
+
+export const handleMarkEnrollmentAsCompleted = async (
+  userId: string,
+  courseId: string
+) => {
+  try {
+    // Check if the user is enrolled in the course
+    const enrollment = await isUserEnrolled(userId, courseId);
+    if (!enrollment) throw new Error("User is not enrolled in this course");
+    
+    return await markEnrollmentAsCompleted(userId, courseId);
+  } catch (error) {
+    throw new Error("Error marking enrollment as completed");
+    
+  }
 }
