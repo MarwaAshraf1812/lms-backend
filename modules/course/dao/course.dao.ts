@@ -1,4 +1,3 @@
-import { Category } from './../../../node_modules/.prisma/client/index.d';
 import { CreateCourseDTO } from './../course.dto';
 import { prisma } from "../../../config/prisma";
 import {
