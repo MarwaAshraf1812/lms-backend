@@ -12,6 +12,6 @@ export const aiQuizSuggestionHandler = async (req: Request, res: Response) => {
     const result = await getOrCreateAIResult(topic, type);
     res.status(200).json({result});
   } catch (error) {
-    res.status(500).json({error: "Internal Server Error"});
+    res.status(500).json({message: "Internal Server Error", error});
   }
 }
