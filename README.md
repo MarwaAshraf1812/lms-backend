@@ -64,8 +64,6 @@ A comprehensive backend solution for managing courses, modules, users, and AI-po
 
 ---
 
-## 🌐 API Endpoints
-
 ### Course Endpoints
 
 - **Create Course**: `POST /courses`
