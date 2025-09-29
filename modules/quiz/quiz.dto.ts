@@ -18,4 +18,15 @@ export interface createQuizDTO {
   questions: createQuestionDTO[];
 }
 
+export interface SubmitAnswerDTO {
+  questionId: string;
+  selectedOptionIndex: number;
+}
+
+export interface SubmitQuizDTO {
+  quizId: string;
+  answers: SubmitAnswerDTO[];
+  studentId: string;
+}
+
 // export type CreateQuizDTO = z.infer<typeof createQuizSchema>;
